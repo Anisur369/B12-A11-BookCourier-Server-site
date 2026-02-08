@@ -27,6 +27,7 @@ async function run() {
     await client.connect();
     const db = client.db("zap_shift_db");
     const parcelsCollection = db.collection("parcels");
+    const coverageCollection = db.collection("warehouses");
 
     app.post("/parcels", async (req, res) => {
       const parcels = req.body;
@@ -111,6 +112,13 @@ async function run() {
       console.log(session);
       res.send({ url: session.url });
       // res.json({ id: session.id });
+    });
+
+    // Coverage related api
+    app.get("/coverage", async (req, res) => {
+      const result = await coverageCollection.find().toArray();
+      console.log(result);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
