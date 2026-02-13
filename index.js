@@ -28,6 +28,23 @@ async function run() {
     const db = client.db("zap_shift_db");
     const parcelsCollection = db.collection("parcels");
     const coverageCollection = db.collection("warehouses");
+    const booksCollection = db.collection("books");
+
+    // books related apis
+    app.get("/books", async (req, res) => {
+      const booksCollection = db.collection("books");
+      const result = await booksCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const book = await booksCollection.findOne(query);
+      res.send(book);
+    });
+
+    // parcels related apis
 
     app.post("/parcels", async (req, res) => {
       const parcels = req.body;
