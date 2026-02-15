@@ -24,11 +24,12 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // db server connection
-    await client.connect();
+    // await client.connect();
     const db = client.db("zap_shift_db");
     const parcelsCollection = db.collection("parcels");
     const coverageCollection = db.collection("warehouses");
     const booksCollection = db.collection("books");
+    const usersCollection = db.collection("users");
 
     // books related apis
     app.get("/books", async (req, res) => {
@@ -44,8 +45,69 @@ async function run() {
       res.send(book);
     });
 
-    // parcels related apis
+    // Coverage related api
+    app.get("/coverage", async (req, res) => {
+      const result = await coverageCollection.find().toArray();
+      res.send(result);
+    });
 
+    // users related apis
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { email: id };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatePaymentStatus = req.body;
+      const updateDoc = {
+        $set: {
+          paymentStatus: updatePaymentStatus,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.put("/usersEmail/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { email: id };
+      const updatePaymentStatus = req.body;
+      const updateDoc = {
+        $set: {
+          wishlist: updatePaymentStatus,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.put("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const wishlist = req.body;
+      const updateDoc = {
+        $set: {
+          wishlist: wishlist,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // parcels related apis======================
     app.post("/parcels", async (req, res) => {
       const parcels = req.body;
       parcels.createdAt = new Date();
@@ -126,23 +188,15 @@ async function run() {
         success_url: `${process.env.CLIENT_URL}/dashboard/payment-success`,
         cancel_url: `${process.env.CLIENT_URL}/dashboard/payment-canceled`,
       });
-      console.log(session);
       res.send({ url: session.url });
       // res.json({ id: session.id });
     });
 
-    // Coverage related api
-    app.get("/coverage", async (req, res) => {
-      const result = await coverageCollection.find().toArray();
-      console.log(result);
-      res.send(result);
-    });
-
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!",
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!",
+    // );
   } catch (err) {
     // Ensures that the client will close when you finish/error
     // await client.close();
